@@ -37,6 +37,7 @@ INSERT INTO Tutor (tutor_id, departamento) VALUES
 (15,'Become Departamento'),
 (19,'Than Departamento'),
 (20,'Company Departamento');
+
 INSERT INTO Horario (horario_id, tutor_id, fecha, hora_inicio, hora_fin, disponible) VALUES
 (1,20,'2025-06-02','17:35:00','18:35:00',True),
 (2,19,'2025-06-26','10:36:00','11:36:00',True),
@@ -58,6 +59,7 @@ INSERT INTO Horario (horario_id, tutor_id, fecha, hora_inicio, hora_fin, disponi
 (18,19,'2025-06-23','08:00:00','09:00:00',True),
 (19,2,'2025-05-22','11:07:00','12:07:00',True),
 (20,5,'2025-05-14','13:08:00','14:08:00',True);
+
 INSERT INTO HorarioSolicitud (solicitud_id, estudiante_id, horario_id, materia, motivo, estado, fecha_solicitud) VALUES
 (1,13,2,'Álgebra','Preparación de examen','Aprobada','2025-05-23 22:34:28'),
 (2,11,2,'Física','Preparación de examen','Rechazada','2025-03-18 01:51:51'),
