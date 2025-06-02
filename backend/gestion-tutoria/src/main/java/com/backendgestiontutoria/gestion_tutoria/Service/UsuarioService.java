@@ -3,6 +3,7 @@ package com.backendgestiontutoria.gestion_tutoria.Service;
 import com.backendgestiontutoria.gestion_tutoria.model.Usuario;
 import com.backendgestiontutoria.gestion_tutoria.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // Buscar usuario por ID
     public Optional<Usuario> obtenerPorId(Integer id) {
@@ -25,12 +29,23 @@ public class UsuarioService {
     }
 
     // Buscar por correo y contraseña (inicio de sesión simple)
-    public Optional<Usuario> login(String correo, String contrasena) {
-        return usuarioRepository.findByCorreoAndContrasena(correo, contrasena);
+    public Optional<Usuario> login(String correo, String contrasenaPlano) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            if (passwordEncoder.matches(contrasenaPlano, usuario.getContrasena())) {
+                return Optional.of(usuario);
+            }
+        }
+        return Optional.empty();
     }
 
     // Crear o actualizar usuario
     public Usuario guardarUsuario(Usuario usuario) {
+        // Solo encripta si la contraseña es nueva
+        if (usuario.getUsuarioId() == null || !usuario.getContrasena().startsWith("$2a$")) {
+            usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+        }
         return usuarioRepository.save(usuario);
     }
 
