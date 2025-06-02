@@ -12,6 +12,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SolicitudDTO {
+
     private Integer idSolicitud;
     private String materia;
     private String motivo;
@@ -22,18 +23,20 @@ public class SolicitudDTO {
     private LocalTime horaInicio;
     private LocalTime horaFin;
 
+    /**
+     * Método de utilidad para convertir una entidad Solicitud a un DTO.
+     */
     public static SolicitudDTO fromEntity(Solicitud solicitud) {
-
         return new SolicitudDTO(
                 solicitud.getSolicitudId(),
                 solicitud.getMateria(),
                 solicitud.getMotivo(),
-                solicitud.getEstado().name(), // ✅ corregido aquí
+                solicitud.getEstado().name(), // Enum a String
                 solicitud.getEstudiante().getUsuario().getNombre(),
                 solicitud.getHorario().getTutor().getUsuario().getNombre(),
                 solicitud.getHorario().getFecha(),
                 solicitud.getHorario().getHoraInicio(),
-                solicitud.getHorario().getHoraFin());
-
+                solicitud.getHorario().getHoraFin()
+        );
     }
 }

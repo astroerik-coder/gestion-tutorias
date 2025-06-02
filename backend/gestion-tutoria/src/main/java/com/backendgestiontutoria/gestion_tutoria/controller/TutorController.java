@@ -1,8 +1,12 @@
 package com.backendgestiontutoria.gestion_tutoria.controller;
 
-import com.backendgestiontutoria.gestion_tutoria.model.Tutor;
 import com.backendgestiontutoria.gestion_tutoria.Service.TutorService;
+import com.backendgestiontutoria.gestion_tutoria.Service.SolicitudService;
+import com.backendgestiontutoria.gestion_tutoria.dto.SolicitudDTO;
+import com.backendgestiontutoria.gestion_tutoria.model.Tutor;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,9 @@ public class TutorController {
 
     @Autowired
     private TutorService tutorService;
+
+    @Autowired
+    private SolicitudService solicitudService;
 
     // Listar todos los tutores
     @GetMapping
@@ -63,5 +70,12 @@ public class TutorController {
     @DeleteMapping("/{id}")
     public void eliminarTutor(@PathVariable Integer id) {
         tutorService.eliminarPorId(id);
+    }
+
+    // Obtener solicitudes asignadas a los horarios del tutor
+    @GetMapping("/{tutorId}/solicitudes")
+    public ResponseEntity<List<SolicitudDTO>> obtenerSolicitudesAsignadas(@PathVariable Long tutorId) {
+        List<SolicitudDTO> solicitudes = solicitudService.obtenerSolicitudesPorTutor(tutorId);
+        return ResponseEntity.ok(solicitudes);
     }
 }

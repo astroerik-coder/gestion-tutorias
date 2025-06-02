@@ -33,7 +33,8 @@ public class Solicitud {
     public enum Estado {
         Pendiente,
         Aprobada,
-        Rechazada
+        Rechazada,
+        Completada
     }
 
     @ManyToOne
