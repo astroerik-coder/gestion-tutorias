@@ -4,10 +4,14 @@ import com.backendgestiontutoria.gestion_tutoria.dto.SolicitudDTO;
 import com.backendgestiontutoria.gestion_tutoria.model.Estudiante;
 import com.backendgestiontutoria.gestion_tutoria.model.Horario;
 import com.backendgestiontutoria.gestion_tutoria.model.Solicitud;
+import com.backendgestiontutoria.gestion_tutoria.repository.EstudianteRepository;
+import com.backendgestiontutoria.gestion_tutoria.repository.HorarioRepository;
 import com.backendgestiontutoria.gestion_tutoria.Service.SolicitudService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +24,12 @@ public class SolicitudController {
 
     @Autowired
     private SolicitudService solicitudService;
+
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
 
     // Listar todas como DTO
     @GetMapping
@@ -40,7 +50,19 @@ public class SolicitudController {
     // Crear solicitud (devuelve DTO, recibe entidad)
     @PostMapping
     public SolicitudDTO crearSolicitud(@RequestBody Solicitud solicitud) {
-        return SolicitudDTO.fromEntity(solicitudService.guardarSolicitud(solicitud));
+        Integer estudianteId = solicitud.getEstudiante().getEstudianteId();
+        Integer horarioId = solicitud.getHorario().getHorarioId();
+
+        Optional<Estudiante> estudianteOpt = estudianteRepository.findById(estudianteId);
+        Optional<Horario> horarioOpt = horarioRepository.findById(horarioId);
+
+        if (estudianteOpt.isPresent() && horarioOpt.isPresent()) {
+            solicitud.setEstudiante(estudianteOpt.get());
+            solicitud.setHorario(horarioOpt.get());
+            return SolicitudDTO.fromEntity(solicitudService.guardarSolicitud(solicitud));
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estudiante u horario no válidos");
+        }
     }
 
     // Actualizar solicitud
