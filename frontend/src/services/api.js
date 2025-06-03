@@ -70,6 +70,18 @@ export const horarioService = {
       throw error;
     }
   },
+  createHorario: async ({ fecha, horaInicio, horaFin }) => {
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) throw new Error("Usuario no encontrado");
+    const payload = {
+      tutor: { tutorId: usuario.usuarioId },
+      fecha,
+      horaInicio,
+      horaFin,
+    };
+    const response = await api.post("/horarios", payload);
+    return response.data;
+  },
 };
 
 // Servicio de solicitudes
@@ -95,43 +107,36 @@ export const solicitudService = {
     }
   },
 
+  getSolicitudesPorTutor: async (tutorId) => {
+    try {
+      const response = await api.get(`/tutores/${tutorId}/solicitudes`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   /* Funcional */
   createSolicitud: async (formData) => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado");
-  
-      const payload = JSON.parse(atob(token.split(".")[1]));
-  
-      const estudiante = {
-        estudianteId: payload.id,
-        carrera: payload.carrera || "",
-        usuario: {
-          usuarioId: payload.id,
-          nombre: payload.nombre,
-          correo: payload.sub,
-          contrasena: "",
-          rol: "estudiante",
-        },
-      };
-  
-      const horario = await horarioService.getHorarioById(formData.horarioId);
-  
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      if (!token || !usuario) throw new Error("Token o usuario no encontrado");
+
       const solicitud = {
-        materia: formData.subject,
-        motivo: formData.reason,
+        materia: formData.materia,
+        motivo: formData.motivo,
         estado: "Pendiente",
         estudiante: {
           estudianteId: usuario.usuarioId,
         },
         horario: {
-          horarioId: formData.horarioId,
+          horarioId: formData.horario.horarioId || formData.horarioId,
         },
       };
-  
+
       const response = await api.post("/solicitudes", solicitud);
       return response.data;
-  
     } catch (error) {
       throw error;
     }
@@ -185,10 +190,9 @@ export const auditService = {
   },
 
   getLogsByUser: async (userId) => {
-  const response = await api.get(API_ENDPOINTS.audit.byUser(userId));
-  return response.data;
-}
-
+    const response = await api.get(API_ENDPOINTS.audit.byUser(userId));
+    return response.data;
+  },
 };
 
 export default {

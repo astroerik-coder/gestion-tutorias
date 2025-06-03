@@ -63,25 +63,13 @@ const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
 
     setLoading(true);
     try {
-      const usuario = JSON.parse(localStorage.getItem("usuario"));
-      const estudianteId = usuario?.usuarioId;
-
-      const solicitudData = {
-        materia: localForm.subject,
-        motivo: localForm.reason,
-        estado: "Pendiente",
-        estudiante: {
-          estudianteId: estudianteId,
-        },
-        horario: {
-          horarioId: localForm.horarioId,
-        },
-      };
-
-      await solicitudService.createSolicitud(solicitudData);
+      await onSubmit({
+        subject: localForm.subject,
+        reason: localForm.reason,
+        horarioId: localForm.horarioId,
+      });
 
       toast.success("Solicitud enviada exitosamente");
-      onSubmit?.();
       setLocalForm(initialForm);
       onClose();
     } catch (err) {

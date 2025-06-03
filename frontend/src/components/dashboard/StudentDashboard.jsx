@@ -146,7 +146,11 @@ const StudentDashboard = () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await solicitudService.createSolicitud(formData);
+      await solicitudService.createSolicitud({
+        materia: formData.subject,
+        motivo: formData.reason,
+        horario: { horarioId: formData.horarioId },
+      });
       setIsModalOpen(false);
       const usuario = JSON.parse(localStorage.getItem("usuario"));
       const updated = await solicitudService.getSolicitudesPorEstudiante(
