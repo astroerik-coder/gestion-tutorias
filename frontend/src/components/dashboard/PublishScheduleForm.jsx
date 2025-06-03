@@ -94,12 +94,15 @@ const PublishScheduleForm = () => {
         return;
       }
 
-      await horarioService.createHorario({
-        tutorId: 11, // Por ahora hardcodeado, luego se obtendrá del usuario logueado
-        fecha,
-        horaInicio,
-        horaFin,
-      });
+    await horarioService.createHorario({
+      fecha,
+      horaInicio,
+      horaFin,
+      tutor: {
+        tutorId: 122 // ✅ Correcto
+      }
+    });
+
 
       setSuccess(true);
       setFormData({

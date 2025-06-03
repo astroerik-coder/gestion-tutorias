@@ -68,6 +68,12 @@ public class HorarioController {
     // ✅ Crear nuevo horario (requiere tutor existente)
 @PostMapping
 public ResponseEntity<HorarioDTO> crearHorario(@RequestBody Horario horario) {
+    System.out.println("➡ POST /horarios recibido:");
+    System.out.println("Fecha: " + horario.getFecha());
+    System.out.println("Inicio: " + horario.getHoraInicio());
+    System.out.println("Fin: " + horario.getHoraFin());
+    System.out.println("Tutor: " + (horario.getTutor() != null ? horario.getTutor().getTutorId() : "NULL"));
+
     if (horario.getTutor() == null || horario.getTutor().getTutorId() == null) {
         return ResponseEntity.badRequest().build();
     }

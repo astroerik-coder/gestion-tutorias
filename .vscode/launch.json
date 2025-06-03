@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-GestionTutoriaApplication<gestion-tutoria>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.backendgestiontutoria.gestion_tutoria.GestionTutoriaApplication",
+            "projectName": "gestion-tutoria",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
