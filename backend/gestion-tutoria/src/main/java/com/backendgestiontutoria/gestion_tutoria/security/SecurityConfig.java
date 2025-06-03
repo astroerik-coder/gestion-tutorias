@@ -35,7 +35,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/usuarios/login", "/api/usuarios").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
             .requestMatchers("/api/solicitudes/**").hasAnyRole("ESTUDIANTE", "TUTOR", "COORDINADOR")
-            .requestMatchers("/api/horarios/**").hasAnyRole("TUTOR", "COORDINADOR")
+            .requestMatchers("/api/horarios/**").hasAnyRole("TUTOR", "COORDINADOR", "ESTUDIANTE")
             .requestMatchers("/api/logs/**").hasRole("COORDINADOR")
             .anyRequest().authenticated()
         )

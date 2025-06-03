@@ -9,6 +9,7 @@ import com.backendgestiontutoria.gestion_tutoria.model.Horario;
 
 @Data
 public class HorarioDTO {
+    private Integer horarioId;
     private Integer tutorId;
     private LocalDate fecha;
     private LocalTime horaInicio;
@@ -17,6 +18,7 @@ public class HorarioDTO {
     // ✅ Método estático requerido por el controlador
     public static HorarioDTO fromEntity(Horario horario) {
         HorarioDTO dto = new HorarioDTO();
+        dto.setHorarioId(horario.getHorarioId());
         dto.setTutorId(horario.getTutor().getTutorId());
         dto.setFecha(horario.getFecha());
         dto.setHoraInicio(horario.getHoraInicio());
