@@ -9,12 +9,15 @@ import {
   Select,
   MenuItem,
   Avatar,
+  Tooltip,
 } from "@mui/material";
+
 import {
   Menu as MenuIcon,
   SwapHoriz as SwapHorizIcon,
 } from "@mui/icons-material";
-
+import { logout } from "../../services/authService"; // ajusta la ruta si es diferen
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 const AppBar = ({ onMenuClick, role, onRoleChange, user }) => {
   return (
     <MuiAppBar
@@ -47,7 +50,7 @@ const AppBar = ({ onMenuClick, role, onRoleChange, user }) => {
         >
           Sistema de Tutorías
         </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
   <Box
     sx={{
       px: 2,
@@ -63,6 +66,7 @@ const AppBar = ({ onMenuClick, role, onRoleChange, user }) => {
       Rol: {role.charAt(0).toUpperCase() + role.slice(1)}
     </Typography>
   </Box>
+
   <Avatar
     sx={{
       bgcolor: "primary.main",
@@ -73,7 +77,16 @@ const AppBar = ({ onMenuClick, role, onRoleChange, user }) => {
   >
     {user?.name?.split(" ").map((n) => n[0]).join("") || "U"}
   </Avatar>
+
+  {/* Botón de cerrar sesión */}
+  <Tooltip title="Cerrar sesión">
+<IconButton onClick={logout} sx={{ color: "error.main" }}>
+  <ExitToAppIcon fontSize="medium" />
+</IconButton>
+
+  </Tooltip>
 </Box>
+
 
 
       </Toolbar>
