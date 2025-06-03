@@ -1,32 +1,26 @@
 package com.backendgestiontutoria.gestion_tutoria.dto;
 
-import com.backendgestiontutoria.gestion_tutoria.model.Horario;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.backendgestiontutoria.gestion_tutoria.model.Horario;
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class HorarioDTO {
-    private Integer horarioId;
+    private Integer tutorId;
     private LocalDate fecha;
     private LocalTime horaInicio;
     private LocalTime horaFin;
-    private String tutorNombre;
-    private String departamento;
 
+    // ✅ Método estático requerido por el controlador
     public static HorarioDTO fromEntity(Horario horario) {
-        return new HorarioDTO(
-            horario.getHorarioId(),
-            horario.getFecha(),
-            horario.getHoraInicio(),
-            horario.getHoraFin(),
-            horario.getTutor().getUsuario().getNombre(),
-            horario.getTutor().getDepartamento()
-        );
+        HorarioDTO dto = new HorarioDTO();
+        dto.setTutorId(horario.getTutor().getTutorId());
+        dto.setFecha(horario.getFecha());
+        dto.setHoraInicio(horario.getHoraInicio());
+        dto.setHoraFin(horario.getHoraFin());
+        return dto;
     }
 }

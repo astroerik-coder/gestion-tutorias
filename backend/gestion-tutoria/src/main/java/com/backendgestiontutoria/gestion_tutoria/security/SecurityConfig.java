@@ -26,18 +26,30 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/usuarios/login", "/api/usuarios").permitAll()
-                        .requestMatchers(
-                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**"
-            ).permitAll() // ✅ permite swagger
-                        .requestMatchers("/api/solicitudes/**").hasAnyRole("ESTUDIANTE", "TUTOR", "COORDINADOR")
-                        .requestMatchers("/api/horarios/**").hasAnyRole("TUTOR", "COORDINADOR")
-                        .requestMatchers("/api/logs/**").hasRole("COORDINADOR")
-                        .anyRequest().authenticated())
+        /*
+         * return http.csrf(csrf -> csrf.disable())
+         * .authorizeHttpRequests(auth -> auth
+         * .requestMatchers("/api/usuarios/login", "/api/usuarios").permitAll()
+         * .requestMatchers(
+         * "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**"
+         * ).permitAll() // ✅ permite swagger
+         * .requestMatchers("/api/solicitudes/**").hasAnyRole("ESTUDIANTE", "TUTOR",
+         * "COORDINADOR")
+         * .requestMatchers("/api/horarios/**").hasAnyRole("TUTOR", "COORDINADOR")
+         * .requestMatchers("/api/logs/**").hasRole("COORDINADOR")
+         * .anyRequest().authenticated())
+         * 
+         * .addFilterBefore(jwtRequestFilter,
+         * UsernamePasswordAuthenticationFilter.class)
+         * .build();
+         * }
+         */
 
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // ⛔️ Permite TODO sin autenticación
+                )
                 .build();
     }
 }

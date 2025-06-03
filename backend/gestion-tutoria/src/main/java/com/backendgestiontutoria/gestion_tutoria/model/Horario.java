@@ -18,16 +18,12 @@ public class Horario {
     @Column(name = "horario_id")
     private Integer horarioId;
 
-    @Column(nullable = false)
-    private LocalDate fecha;
-
-    @Column(name = "hora_inicio", nullable = false)
-    private LocalTime horaInicio;
-
-    @Column(name = "hora_fin", nullable = false)
-    private LocalTime horaFin;
-
     @ManyToOne
     @JoinColumn(name = "tutor_id", nullable = false)
     private Tutor tutor;
+
+    private LocalDate fecha;
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
+    private Boolean disponible;
 }
