@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Drawer,
   Toolbar,
@@ -7,7 +7,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Home as HomeIcon,
   Description as DescriptionIcon,
@@ -19,7 +19,7 @@ import {
   Settings as SettingsIcon,
   BarChart as BarChartIcon,
   Assessment as AssessmentIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 const sidebarItems = {
   estudiante: [
@@ -36,20 +36,17 @@ const sidebarItems = {
   ],
   coordinador: [
     { id: "dashboard", label: "Dashboard", icon: HomeIcon },
-    { id: "manage-requests", label: "Gestionar Solicitudes", icon: SettingsIcon },
-    { id: "statistics", label: "Estadísticas", icon: BarChartIcon },
+    {
+      id: "manage-requests",
+      label: "Gestionar Solicitudes",
+      icon: SettingsIcon,
+    },
     { id: "users", label: "Usuarios", icon: PeopleIcon },
     { id: "audit", label: "Auditoría", icon: AssessmentIcon },
   ],
 };
 
-const Sidebar = ({ 
-  open, 
-  onClose, 
-  role, 
-  activeSection, 
-  onSectionChange 
-}) => {
+const Sidebar = ({ open, onClose, role, activeSection, onSectionChange }) => {
   return (
     <Drawer
       variant="temporary"
@@ -58,17 +55,17 @@ const Sidebar = ({
       sx={{
         width: 280,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: 280,
-          boxSizing: 'border-box',
-          borderRight: '1px solid',
-          borderColor: 'divider',
-          backgroundColor: 'background.paper',
+          boxSizing: "border-box",
+          borderRight: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
         },
       }}
     >
       <Toolbar />
-      <Box sx={{ overflow: 'auto', py: 2 }}>
+      <Box sx={{ overflow: "auto", py: 2 }}>
         <List>
           {sidebarItems[role]?.map((item) => (
             <ListItem
@@ -82,14 +79,14 @@ const Sidebar = ({
               sx={{
                 mx: 1,
                 borderRadius: 2,
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.light',
-                  color: 'primary.main',
-                  '&:hover': {
-                    backgroundColor: 'primary.light',
+                "&.Mui-selected": {
+                  backgroundColor: "primary.light",
+                  color: "primary.main",
+                  "&:hover": {
+                    backgroundColor: "primary.light",
                   },
-                  '& .MuiListItemIcon-root': {
-                    color: 'primary.main',
+                  "& .MuiListItemIcon-root": {
+                    color: "primary.main",
                   },
                 },
               }}
@@ -97,8 +94,8 @@ const Sidebar = ({
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <item.icon />
               </ListItemIcon>
-              <ListItemText 
-                primary={item.label} 
+              <ListItemText
+                primary={item.label}
                 primaryTypographyProps={{
                   fontWeight: activeSection === item.id ? 600 : 400,
                 }}
@@ -111,4 +108,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

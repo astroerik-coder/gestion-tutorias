@@ -1,198 +1,255 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
   CardHeader,
   CardContent,
+  Typography,
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
-  Avatar,
-  Typography,
+  Divider,
   Chip,
-  IconButton,
-  Button,
-  Paper,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
-import { MoreVert as MoreVertIcon } from "@mui/icons-material";
-import PublishScheduleForm from "./PublishScheduleForm";
+import { Add as AddIcon } from "@mui/icons-material";
+import { horarioService, solicitudService } from "../../services/api";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider, DatePicker, TimePicker } from "@mui/x-date-pickers";
+import esLocale from "date-fns/locale/es";
 
-const TutorDashboard = ({ sessions = [], requests = [], onRequestStatus }) => {
-  const pendingRequests = requests.filter(
-    (request) => request.status === "pendiente"
-  );
+const TutorDashboard = () => {
+  const [horarios, setHorarios] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [nuevoHorario, setNuevoHorario] = useState({
+    fecha: new Date(),
+    horaInicio: new Date(),
+    horaFin: new Date(),
+  });
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  useEffect(() => {
+    if (usuario) {
+      fetchHorarios();
+      fetchSolicitudes();
+    }
+  }, [usuario]);
+
+  const fetchHorarios = async () => {
+    try {
+      const data = await horarioService.getHorarios();
+      setHorarios(data.filter(h => h.tutor?.tutorId === usuario.usuarioId));
+    } catch (err) {
+      setError("Error al cargar los horarios");
+      console.error(err);
+    }
+  };
+
+  const fetchSolicitudes = async () => {
+    try {
+      const data = await solicitudService.getSolicitudesPorTutor(usuario.usuarioId);
+      setSolicitudes(data);
+    } catch (err) {
+      setError("Error al cargar las solicitudes");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setNuevoHorario({
+      fecha: new Date(),
+      horaInicio: new Date(),
+      horaFin: new Date(),
+    });
+  };
+
+  const handleCreateHorario = async () => {
+    try {
+      await horarioService.createHorario({
+        fecha: nuevoHorario.fecha,
+        horaInicio: nuevoHorario.horaInicio,
+        horaFin: nuevoHorario.horaFin,
+      });
+      handleCloseDialog();
+      fetchHorarios();
+    } catch (err) {
+      setError("Error al crear el horario");
+      console.error(err);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "aprobada":
+        return "success";
+      case "pendiente":
+        return "warning";
+      case "rechazada":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Grid container spacing={3}>
-      {/* Sesiones programadas */}
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: "100%", backgroundColor: "background.paper" }}>
+      <Grid item xs={12}>
+        <Card>
           <CardHeader
-            title="Sesiones Programadas"
+            title="Mis Horarios"
             action={
-              <IconButton>
-                <MoreVertIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={handleOpenDialog}
+              >
+                Nuevo Horario
+              </Button>
             }
           />
           <CardContent>
-            {sessions.length > 0 ? (
-              <List>
-                {sessions.map((session) => (
-                  <ListItem
-                    key={session.id}
-                    sx={{
-                      mb: 1,
-                      borderRadius: 1,
-                      "&:hover": {
-                        backgroundColor: "action.hover",
-                      },
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: "primary.main" }}>
-                        {session.subject?.charAt(0) || "?"}
-                      </Avatar>
-                    </ListItemAvatar>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            <List>
+              {horarios.map((horario) => (
+                <React.Fragment key={horario.horarioId}>
+                  <ListItem>
                     <ListItemText
-                      primary={session.subject || "Sin materia"}
-                      secondary={
-                        <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
-                          >
-                            {session.day} {session.time}
-                          </Typography>
-                          <br />
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            Estudiante: {session.student || "Desconocido"}
-                          </Typography>
-                        </>
-                      }
+                      primary={`Fecha: ${new Date(horario.fecha).toLocaleDateString()}`}
+                      secondary={`Hora: ${horario.horaInicio} - ${horario.horaFin}`}
                     />
                     <Chip
-                      label={session.status || "Sin estado"}
-                      color={
-                        session.status === "confirmada" ? "success" : "default"
-                      }
-                      size="small"
+                      label={horario.disponible ? "Disponible" : "No Disponible"}
+                      color={horario.disponible ? "success" : "error"}
                     />
                   </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Paper sx={{ p: 3, textAlign: "center" }}>
-                <Typography color="text.secondary">
-                  No tienes sesiones programadas aún.
-                </Typography>
-              </Paper>
-            )}
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
           </CardContent>
         </Card>
       </Grid>
 
-      {/* Solicitudes pendientes */}
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: "100%", backgroundColor: "background.paper" }}>
-          <CardHeader
-            title="Solicitudes Pendientes"
-            action={
-              <IconButton>
-                <MoreVertIcon />
-              </IconButton>
-            }
-          />
+      <Grid item xs={12}>
+        <Card>
+          <CardHeader title="Solicitudes Recibidas" />
           <CardContent>
-            {pendingRequests.length > 0 ? (
-              <List>
-                {pendingRequests.map((request) => (
-                  <ListItem
-                    key={request.id}
-                    sx={{
-                      mb: 1,
-                      borderRadius: 1,
-                      "&:hover": {
-                        backgroundColor: "action.hover",
-                      },
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: "secondary.main" }}>
-                        {request.subject?.charAt(0) || "?"}
-                      </Avatar>
-                    </ListItemAvatar>
+            <List>
+              {solicitudes.map((solicitud) => (
+                <React.Fragment key={solicitud.solicitudId}>
+                  <ListItem>
                     <ListItemText
-                      primary={request.subject || "Sin materia"}
+                      primary={
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography variant="subtitle1">
+                            {solicitud.materia}
+                          </Typography>
+                          <Chip
+                            label={solicitud.estado}
+                            color={getStatusColor(solicitud.estado)}
+                            size="small"
+                          />
+                        </Box>
+                      }
                       secondary={
                         <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
-                          >
-                            {request.time || "Hora no especificada"}
+                          <Typography variant="body2" color="text.secondary">
+                            Estudiante: {solicitud.estudianteNombre}
                           </Typography>
-                          <br />
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            Estudiante: {request.student || "Desconocido"}
+                          <Typography variant="body2" color="text.secondary">
+                            Motivo: {solicitud.motivo}
                           </Typography>
                         </>
                       }
                     />
-                    <Grid container spacing={1} justifyContent="flex-end">
-                      <Grid item>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          size="small"
-                          onClick={() =>
-                            onRequestStatus(request.id, "aprobada")
-                          }
-                        >
-                          Aprobar
-                        </Button>
-                      </Grid>
-                      <Grid item>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          onClick={() =>
-                            onRequestStatus(request.id, "rechazada")
-                          }
-                        >
-                          Rechazar
-                        </Button>
-                      </Grid>
-                    </Grid>
                   </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Paper sx={{ p: 3, textAlign: "center" }}>
-                <Typography color="text.secondary">
-                  No tienes solicitudes pendientes en este momento.
-                </Typography>
-              </Paper>
-            )}
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
           </CardContent>
         </Card>
-
-        <Grid item xs={12} sx={{ mt: 2 }}>
-          <PublishScheduleForm />
-        </Grid>
       </Grid>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Crear Nuevo Horario</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={esLocale}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <DatePicker
+                    label="Fecha"
+                    value={nuevoHorario.fecha}
+                    onChange={(newValue) =>
+                      setNuevoHorario({ ...nuevoHorario, fecha: newValue })
+                    }
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TimePicker
+                    label="Hora Inicio"
+                    value={nuevoHorario.horaInicio}
+                    onChange={(newValue) =>
+                      setNuevoHorario({ ...nuevoHorario, horaInicio: newValue })
+                    }
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TimePicker
+                    label="Hora Fin"
+                    value={nuevoHorario.horaFin}
+                    onChange={(newValue) =>
+                      setNuevoHorario({ ...nuevoHorario, horaFin: newValue })
+                    }
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </Grid>
+              </Grid>
+            </LocalizationProvider>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancelar</Button>
+          <Button onClick={handleCreateHorario} variant="contained" color="primary">
+            Crear
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };

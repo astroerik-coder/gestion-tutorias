@@ -12,10 +12,10 @@ import {
 } from '@mui/material';
 
 const FeedbackModal = ({ 
-  open, 
-  onClose, 
-  session, 
-  onSubmit 
+  open = false,  // Valor por defecto añadido
+  onClose = () => console.warn('onClose no proporcionado'), 
+  session = {},  // Objeto por defecto
+  onSubmit = () => console.warn('onSubmit no proporcionado') 
 }) => {
   const [form, setForm] = React.useState({
     rating: 0,
@@ -41,7 +41,7 @@ const FeedbackModal = ({
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography variant="h6" fontWeight={600}>
+        <Typography variant="h6" fontWeight={600} component="span">
           Calificar Sesión
         </Typography>
       </DialogTitle>
@@ -49,10 +49,10 @@ const FeedbackModal = ({
         <Box sx={{ pt: 1 }}>
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle1" gutterBottom>
-              {session?.materia}
+              {session?.materia || 'Sesión sin título'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tutor: {session?.tutorNombre}
+              Tutor: {session?.tutorNombre || 'No especificado'}
             </Typography>
           </Box>
 
@@ -109,4 +109,4 @@ const FeedbackModal = ({
   );
 };
 
-export default FeedbackModal; 
+export default FeedbackModal;

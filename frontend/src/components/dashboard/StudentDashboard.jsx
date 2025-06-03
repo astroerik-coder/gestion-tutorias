@@ -10,41 +10,70 @@ import {
   Alert,
   Paper,
   Button,
+  CardHeader,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import RequestTutorialModal from "./modals/RequestTutorialModal";
 import { Add as AddIcon } from "@mui/icons-material";
-import { solicitudService } from "../../services/api";
+import { solicitudService, horarioService } from "../../services/api";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import esLocale from "date-fns/locale/es";
 
 const StudentDashboard = () => {
-  const [requests, setRequests] = useState([]);
+  const [horarios, setHorarios] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedHorario, setSelectedHorario] = useState(null);
+  const [fechaFiltro, setFechaFiltro] = useState(new Date());
+  const [nuevaSolicitud, setNuevaSolicitud] = useState({
+    materia: "",
+    motivo: "",
+  });
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usuario = JSON.parse(localStorage.getItem("usuario"));
-        const id = usuario?.usuarioId;
+    if (usuario) {
+      fetchHorarios();
+      fetchSolicitudes();
+    }
+  }, [usuario, fechaFiltro]);
 
-        if (!id)
-          throw new Error("ID de estudiante no encontrado en localStorage");
+  const fetchHorarios = async () => {
+    try {
+      const data = await horarioService.getHorarios();
+      setHorarios(data.filter(h => h.disponible));
+    } catch (err) {
+      setError("Error al cargar los horarios");
+      console.error(err);
+    }
+  };
 
-        const solicitudes = await solicitudService.getSolicitudesPorEstudiante(
-          id
-        );
-        setRequests(solicitudes);
-      } catch (err) {
-        console.error("Error al cargar solicitudes:", err);
-        setError("Error al cargar solicitudes");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const fetchSolicitudes = async () => {
+    try {
+      const data = await solicitudService.getSolicitudesPorEstudiante(usuario.usuarioId);
+      setSolicitudes(data);
+    } catch (err) {
+      setError("Error al cargar las solicitudes");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     if (!status) return "default";
@@ -107,7 +136,7 @@ const StudentDashboard = () => {
   );
 
   const renderKanbanColumn = (status, title, color) => {
-    const filteredRequests = requests.filter(
+    const filteredRequests = solicitudes.filter(
       (request) => request?.estado?.toLowerCase() === status.toLowerCase()
     );
 
@@ -156,7 +185,7 @@ const StudentDashboard = () => {
       const updated = await solicitudService.getSolicitudesPorEstudiante(
         usuario.usuarioId
       );
-      setRequests(updated);
+      setSolicitudes(updated);
     } catch (err) {
       setSubmitError("Error al enviar la solicitud.");
       console.error(err);
@@ -164,6 +193,42 @@ const StudentDashboard = () => {
       setSubmitting(false);
     }
   };
+
+  const handleOpenDialog = (horario) => {
+    setSelectedHorario(horario);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedHorario(null);
+    setNuevaSolicitud({
+      materia: "",
+      motivo: "",
+    });
+  };
+
+  const handleCreateSolicitud = async () => {
+    try {
+      await solicitudService.createSolicitud({
+        ...nuevaSolicitud,
+        horario: selectedHorario,
+      });
+      handleCloseDialog();
+      fetchSolicitudes();
+    } catch (err) {
+      setError("Error al crear la solicitud");
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box className="dashboard-container">
@@ -214,6 +279,139 @@ const StudentDashboard = () => {
         onSubmit={handleSubmitSolicitud}
         loading={submitting}
       />
+
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader
+              title="Horarios Disponibles"
+              action={
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={esLocale}>
+                  <DatePicker
+                    label="Filtrar por fecha"
+                    value={fechaFiltro}
+                    onChange={(newValue) => setFechaFiltro(newValue)}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                </LocalizationProvider>
+              }
+            />
+            <CardContent>
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+              )}
+              <List>
+                {horarios
+                  .filter(h => new Date(h.fecha).toDateString() === fechaFiltro.toDateString())
+                  .map((horario) => (
+                    <React.Fragment key={horario.horarioId}>
+                      <ListItem>
+                        <ListItemText
+                          primary={`Tutor: ${horario.tutor?.nombre || "No especificado"}`}
+                          secondary={`Hora: ${horario.horaInicio} - ${horario.horaFin}`}
+                        />
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleOpenDialog(horario)}
+                        >
+                          Reservar
+                        </Button>
+                      </ListItem>
+                      <Divider />
+                    </React.Fragment>
+                  ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader title="Mis Solicitudes" />
+            <CardContent>
+              <List>
+                {solicitudes.map((solicitud) => (
+                  <React.Fragment key={solicitud.solicitudId}>
+                    <ListItem>
+                      <ListItemText
+                        primary={
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Typography variant="subtitle1">
+                              {solicitud.materia}
+                            </Typography>
+                            <Chip
+                              label={solicitud.estado}
+                              color={getStatusColor(solicitud.estado)}
+                              size="small"
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <>
+                            <Typography variant="body2" color="text.secondary">
+                              Tutor: {solicitud.tutorNombre}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Motivo: {solicitud.motivo}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    <Divider />
+                  </React.Fragment>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Crear Nueva Solicitud</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Materia"
+                  fullWidth
+                  value={nuevaSolicitud.materia}
+                  onChange={(e) =>
+                    setNuevaSolicitud({ ...nuevaSolicitud, materia: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Motivo"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={nuevaSolicitud.motivo}
+                  onChange={(e) =>
+                    setNuevaSolicitud({ ...nuevaSolicitud, motivo: e.target.value })
+                  }
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancelar</Button>
+          <Button
+            onClick={handleCreateSolicitud}
+            variant="contained"
+            color="primary"
+            disabled={!nuevaSolicitud.materia || !nuevaSolicitud.motivo}
+          >
+            Crear
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

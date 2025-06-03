@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,18 +12,18 @@ import {
   Select,
   MenuItem,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 
-const PublishScheduleModal = ({ 
-  open, 
-  onClose, 
-  form, 
-  onFormChange, 
-  onSubmit 
+const PublishScheduleModal = ({
+  open,
+  onClose,
+  form,
+  onFormChange,
+  onSubmit,
 }) => {
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
@@ -34,17 +34,18 @@ const PublishScheduleModal = ({
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography variant="h6" fontWeight={600}>
-          Publicar Horario de Disponibilidad
-        </Typography>
+        Publicar Horario de Disponibilidad
       </DialogTitle>
+
       <DialogContent>
         <Box sx={{ pt: 1 }}>
           <FormControl fullWidth sx={{ mb: 3 }}>
             <InputLabel>Materia</InputLabel>
             <Select
               value={form.subject}
-              onChange={(e) => onFormChange({ ...form, subject: e.target.value })}
+              onChange={(e) =>
+                onFormChange({ ...form, subject: e.target.value })
+              }
               label="Materia"
             >
               <MenuItem value="matematicas">Matemáticas</MenuItem>
@@ -90,24 +91,24 @@ const PublishScheduleModal = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button 
+        <Button
           onClick={onClose}
-          sx={{ 
-            color: 'text.secondary',
-            '&:hover': {
-              backgroundColor: 'action.hover',
+          sx={{
+            color: "text.secondary",
+            "&:hover": {
+              backgroundColor: "action.hover",
             },
           }}
         >
           Cancelar
         </Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={onSubmit}
-          sx={{ 
+          sx={{
             px: 3,
-            '&:hover': {
-              backgroundColor: 'primary.dark',
+            "&:hover": {
+              backgroundColor: "primary.dark",
             },
           }}
         >
@@ -118,4 +119,4 @@ const PublishScheduleModal = ({
   );
 };
 
-export default PublishScheduleModal; 
+export default PublishScheduleModal;

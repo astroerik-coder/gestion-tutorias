@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { horarioService, solicitudService, auditService  } from "../services/api";
+import {
+  horarioService,
+  solicitudService,
+  auditService,
+  usuarioService,
+} from "../services/api";
 
 export const useDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -7,7 +12,8 @@ export const useDashboard = () => {
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [userTab, setUserTab] = useState(0);
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [userTab, setUserTab] = useState("estudiante");
   const [recentActivity, setRecentActivity] = useState([]);
 
   // Estado para formularios
@@ -23,47 +29,77 @@ export const useDashboard = () => {
     horaFin: null,
   });
 
+  const [userForm, setUserForm] = useState({
+    nombre: "",
+    correo: "",
+    contrasena: "",
+    rol: "",
+    carrera: "",
+  });
+
   // Estados para datos
   const [requests, setRequests] = useState([]);
   const [horarios, setHorarios] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Cargar datos iniciales
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Llamadas simultáneas a solicitudes, horarios y logs
-      const [requestsData, horariosData, logsData] = await Promise.all([
-        solicitudService.getSolicitudes(),
-        horarioService.getHorarios(),
-        auditService.getLogsByTable("solicitud"),
-      ]);
+        // Llamadas simultáneas a solicitudes, horarios y logs
+        const [requestsData, horariosData, logsData] = await Promise.all([
+          solicitudService.getSolicitudes(),
+          horarioService.getHorarios(),
+          auditService.getLogsByTable("solicitud"),
+        ]);
 
-      setRequests(requestsData);
-      setHorarios(horariosData);
+        setRequests(requestsData);
+        setHorarios(horariosData);
 
-      const parsedLogs = logsData.map((log) => ({
-        id: log.logId,
-        subject: `${log.usuario.nombre} - ${log.accion}`,
-        status: log.descripcion,
-        date: log.fecha,
-      }));
+        const parsedLogs = logsData.map((log) => ({
+          id: log.logId,
+          subject: `${log.usuario.nombre} - ${log.accion}`,
+          status: log.descripcion,
+          date: log.fecha,
+        }));
 
-      setRecentActivity(parsedLogs);
-    } catch (err) {
-      setError("Error al cargar los datos");
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
+        setRecentActivity(parsedLogs);
+      } catch (err) {
+        setError("Error al cargar los datos");
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Cargar usuarios cuando cambia el tab
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+        setLoading(true);
+        const data = await usuarioService.getUsuariosPorRol(userTab);
+        setUsuarios(data);
+      } catch (err) {
+        setError("Error al cargar los usuarios");
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeSection === "users") {
+      fetchUsuarios();
     }
-  };
+  }, [userTab, activeSection]);
 
-  fetchData();
-}, []);
   // Handlers
   const handleRequestSubmit = async () => {
     try {
@@ -91,6 +127,24 @@ useEffect(() => {
       setScheduleDialogOpen(false);
     } catch (err) {
       setError("Error al crear el horario");
+      console.error("Error:", err);
+    }
+  };
+
+  const handleUserSubmit = async () => {
+    try {
+      const newUser = await usuarioService.crearUsuario(userForm);
+      setUsuarios([newUser, ...usuarios]);
+      setUserForm({
+        nombre: "",
+        correo: "",
+        contrasena: "",
+        rol: "",
+        carrera: "",
+      });
+      setAddUserDialogOpen(false);
+    } catch (err) {
+      setError("Error al crear el usuario");
       console.error("Error:", err);
     }
   };
@@ -124,6 +178,8 @@ useEffect(() => {
     setScheduleDialogOpen,
     selectedSession,
     setSelectedSession,
+    addUserDialogOpen,
+    setAddUserDialogOpen,
     userTab,
     setUserTab,
 
@@ -132,17 +188,21 @@ useEffect(() => {
     setRequestForm,
     scheduleForm,
     setScheduleForm,
+    userForm,
+    setUserForm,
 
     // Datos
     recentActivity,
     requests,
     horarios,
+    usuarios,
     loading,
     error,
 
     // Handlers
     handleRequestSubmit,
     handleScheduleSubmit,
+    handleUserSubmit,
     handleRequestStatus,
   };
 };

@@ -17,6 +17,7 @@ import UsersSection from "../components/dashboard/sections/UsersSection";
 import StatisticsSection from "../components/dashboard/sections/StatisticsSection";
 import AuditPage from "../pages/AuditPage";
 import ManageRequestsSection from "../components/dashboard/sections/ManageRequestsSection";
+import { solicitudService } from "../services/api"; // Asegúrate que esté importado
 
 export default function DashboardPage() {
   const { user, role, setRole } = useUserRole();
@@ -73,6 +74,15 @@ export default function DashboardPage() {
       </Box>
     );
   }
+
+  const fetchRequests = async () => {
+    try {
+      const data = await solicitudService.getSolicitudes();
+      setRequestForm(data); // ← esto está mal
+    } catch (error) {
+      console.error("Error al refrescar solicitudes:", error);
+    }
+  };
   const renderMainContent = () => {
     switch (activeSection) {
       case "dashboard":
@@ -123,8 +133,7 @@ export default function DashboardPage() {
           <ManageRequestsSection
             requests={requests}
             onAddRequest={() => setRequestDialogOpen(true)}
-            onApproveRequest={(id) => handleRequestStatus(id, "aprobada")}
-            onRejectRequest={(id) => handleRequestStatus(id, "rechazada")}
+            onEstadoActualizado={fetchRequests}
           />
         );
 

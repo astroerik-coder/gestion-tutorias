@@ -1,17 +1,23 @@
 // src/components/dashboard/sections/AuditPage.jsx
-import React, { useEffect, useState } from 'react';
-import AuditSection from '../components/dashboard/sections/AuditSection';
-import { auditService } from '../services/api';
-import { Typography, Box, Select, MenuItem, CircularProgress } from '@mui/material';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import AuditSection from "../components/dashboard/sections/AuditSection";
+import { auditService } from "../services/api";
+import {
+  Typography,
+  Box,
+  Select,
+  MenuItem,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
 
 const AuditPage = () => {
   const [logs, setLogs] = useState([]);
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [loading, setLoading] = useState(false);
 
-// Cargar usuarios estudiantes
+  // Cargar usuarios estudiantes
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -25,8 +31,7 @@ const AuditPage = () => {
     fetchUsers();
   }, []);
 
-
-// Cargar logs iniciales
+  // Cargar logs iniciales
   useEffect(() => {
     const fetchInitialLogs = async () => {
       setLoading(true);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,16 +12,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material';
+} from "@mui/material";
 
 const AddUserModal = ({
   open = false,
   onClose = () => {},
   form = {
-    name: "",
-    email: "",
-    role: "",
-    password: "",
+    nombre: "",
+    correo: "",
+    contrasena: "",
+    rol: "",
+    carrera: "",
   },
   onFormChange = () => {},
   onSubmit = () => {},
@@ -39,8 +40,8 @@ const AddUserModal = ({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
@@ -60,25 +61,26 @@ const AddUserModal = ({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
             <TextField
               label="Nombre"
-              value={form.name}
-              onChange={handleChange("name")}
+              value={form.nombre}
+              onChange={handleChange("nombre")}
               required
               fullWidth
             />
             <TextField
               label="Correo Electrónico"
               type="email"
-              value={form.email}
-              onChange={handleChange("email")}
+              value={form.correo}
+              onChange={handleChange("correo")}
               required
               fullWidth
             />
-            <FormControl fullWidth sx={{ mb: 3 }}>
+            <FormControl fullWidth>
               <InputLabel>Rol</InputLabel>
               <Select
-                value={form.role}
-                onChange={handleChange("role")}
+                value={form.rol}
+                onChange={handleChange("rol")}
                 label="Rol"
+                required
               >
                 <MenuItem value="estudiante">Estudiante</MenuItem>
                 <MenuItem value="tutor">Tutor</MenuItem>
@@ -88,36 +90,23 @@ const AddUserModal = ({
             <TextField
               label="Contraseña"
               type="password"
-              value={form.password}
-              onChange={handleChange("password")}
+              value={form.contrasena}
+              onChange={handleChange("contrasena")}
               required
+              fullWidth
+            />
+            <TextField
+              label="Carrera"
+              value={form.carrera}
+              onChange={handleChange("carrera")}
               fullWidth
             />
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button 
-            onClick={onClose}
-            sx={{ 
-              color: 'text.secondary',
-              '&:hover': {
-                backgroundColor: 'action.hover',
-              },
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit"
-            variant="contained" 
-            sx={{ 
-              px: 3,
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-              },
-            }}
-          >
-            Crear Usuario
+        <DialogActions>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button type="submit" variant="contained">
+            Agregar Usuario
           </Button>
         </DialogActions>
       </form>
@@ -125,4 +114,4 @@ const AddUserModal = ({
   );
 };
 
-export default AddUserModal; 
+export default AddUserModal;

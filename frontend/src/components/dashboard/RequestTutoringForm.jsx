@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,14 +10,14 @@ import {
   Paper,
   Typography,
   Alert,
-} from '@mui/material';
-import { solicitudService, horarioService } from '../../services/api';
+} from "@mui/material";
+import { solicitudService, horarioService } from "../../services/api";
 
 const RequestTutoringForm = () => {
   const [formData, setFormData] = useState({
-    materia: '',
-    motivo: '',
-    horarioId: '',
+    materia: "",
+    motivo: "",
+    horarioId: "",
   });
   const [horarios, setHorarios] = useState([]);
   const [error, setError] = useState(null);
@@ -32,15 +32,15 @@ const RequestTutoringForm = () => {
       const horariosData = await horarioService.getHorarios();
       setHorarios(horariosData);
     } catch (error) {
-      setError('Error al cargar los horarios disponibles');
+      setError("Error al cargar los horarios disponibles");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -50,18 +50,18 @@ const RequestTutoringForm = () => {
       await solicitudService.createSolicitud(formData);
       setSuccess(true);
       setFormData({
-        materia: '',
-        motivo: '',
-        horarioId: '',
+        materia: "",
+        motivo: "",
+        horarioId: "",
       });
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      setError('Error al crear la solicitud');
+      setError("Error al crear la solicitud");
     }
   };
 
   return (
-    <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", mt: 4 }}>
       <Typography variant="h6" gutterBottom>
         Solicitar Tutoría
       </Typography>
@@ -112,19 +112,17 @@ const RequestTutoringForm = () => {
           >
             {horarios.map((horario) => (
               <MenuItem key={horario.id} value={horario.id}>
-                {`${horario.fecha} - ${horario.horaInicio.slice(0, 5)} a ${horario.horaFin.slice(0, 5)} - ${horario.tutorNombre}`}
+                {`${horario.fecha} - ${horario.horaInicio.slice(
+                  0,
+                  5
+                )} a ${horario.horaFin.slice(0, 5)} - ${horario.tutorNombre}`}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         <Box sx={{ mt: 3 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-          >
+          <Button type="submit" variant="contained" color="primary" fullWidth>
             Solicitar Tutoría
           </Button>
         </Box>
