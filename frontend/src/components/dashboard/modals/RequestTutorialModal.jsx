@@ -12,60 +12,95 @@ import {
   FormControl,
   InputLabel,
   Select,
+  CircularProgress,
 } from "@mui/material";
-import {
-  horarioService,
-  solicitudService,
-  authService,
-} from "../../../services/api";
+import { horarioService, solicitudService } from "../../../services/api";
+import { toast } from "react-toastify";
 
 const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
-  const [localForm, setLocalForm] = useState({
+  const initialForm = {
     subject: "",
     reason: "",
     horarioId: "",
-  });
-  const [horarios, setHorarios] = useState([]);
+  };
+
+  const [localForm, setLocalForm] = useState(initialForm);
+  const [horariosDisponibles, setHorariosDisponibles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!open) {
+      setLocalForm(initialForm);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
       setLoading(true);
       horarioService
         .getHorarios()
-        .then(setHorarios)
-        .catch((err) => setError("Error al cargar horarios disponibles"))
+        .then((horarios) => {
+          const now = new Date();
+          const disponibles = horarios.filter((h) => {
+            const fechaHora = new Date(`${h.fecha}T${h.horaInicio}`);
+            return fechaHora > now;
+          });
+          setHorariosDisponibles(disponibles);
+        })
+        .catch((err) => {
+          toast.error("Error al cargar horarios disponibles");
+          console.error("Error fetching schedules:", err);
+        })
         .finally(() => setLoading(false));
     }
   }, [open]);
 
   const handleSubmit = async () => {
-    if (!localForm.horarioId || !localForm.subject || !localForm.reason) return;
+    if (!localForm.horarioId || !localForm.subject || !localForm.reason) {
+      toast.error("Por favor complete todos los campos");
+      return;
+    }
 
+    setLoading(true);
     try {
-      const horario = await horarioService.getHorarioById(localForm.horarioId);
-      const estudiante = await authService.getCurrentUser(); // Decodificado desde JWT
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      const estudianteId = usuario?.usuarioId;
 
-      const solicitudPayload = {
+      const solicitudData = {
         materia: localForm.subject,
         motivo: localForm.reason,
         estado: "Pendiente",
-        fechaSolicitud: new Date().toISOString(),
-        estudiante: estudiante,
-        horario: horario,
+        estudiante: {
+          estudianteId: estudianteId,
+        },
+        horario: {
+          horarioId: localForm.horarioId,
+        },
       };
 
-      await solicitudService.createSolicitud(solicitudPayload);
+      await solicitudService.createSolicitud(solicitudData);
+
+      toast.success("Solicitud enviada exitosamente");
       onSubmit?.();
-      setLocalForm({ subject: "", reason: "", horarioId: "" });
+      setLocalForm(initialForm);
       onClose();
     } catch (err) {
-      console.error("Error al enviar solicitud:", err);
-      setError(
-        "No se pudo enviar la solicitud. Verifique su sesión o intente nuevamente."
-      );
+      toast.error("Error al enviar la solicitud");
+      console.error("Error submitting request:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const safeValue =
+      name === "horarioId" ? (value === "" ? "" : parseInt(value, 10)) : value;
+
+    setLocalForm((prev) => ({
+      ...prev,
+      [name]: safeValue,
+    }));
   };
 
   return (
@@ -76,21 +111,23 @@ const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
       fullWidth
       PaperProps={{ sx: { borderRadius: 2 } }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Typography variant="h6" fontWeight={600}>
+      <DialogTitle component="div" sx={{ pb: 1 }}>
+        <Typography variant="h6" fontWeight={600} component="span">
           Solicitar Tutoría
         </Typography>
       </DialogTitle>
+
       <DialogContent>
         <Box sx={{ pt: 1 }}>
           <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel>Materia</InputLabel>
+            <InputLabel id="subject-label">Materia</InputLabel>
             <Select
+              labelId="subject-label"
+              name="subject"
               value={localForm.subject}
               label="Materia"
-              onChange={(e) =>
-                setLocalForm((prev) => ({ ...prev, subject: e.target.value }))
-              }
+              onChange={handleChange}
+              disabled={loading}
             >
               <MenuItem value="matematicas">Matemáticas</MenuItem>
               <MenuItem value="fisica">Física</MenuItem>
@@ -103,39 +140,43 @@ const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
             fullWidth
             multiline
             rows={4}
+            name="reason"
             label="Motivo de la solicitud"
             value={localForm.reason}
-            onChange={(e) =>
-              setLocalForm((prev) => ({ ...prev, reason: e.target.value }))
-            }
+            onChange={handleChange}
             sx={{ mb: 3 }}
+            disabled={loading}
           />
 
           <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel>Horario disponible</InputLabel>
+            <InputLabel id="horario-label">Horario disponible</InputLabel>
             <Select
+              labelId="horario-label"
+              name="horarioId"
               value={localForm.horarioId}
               label="Horario disponible"
-              onChange={(e) =>
-                setLocalForm((prev) => ({ ...prev, horarioId: e.target.value }))
-              }
+              onChange={handleChange}
+              disabled={loading || horariosDisponibles.length === 0}
             >
-              {horarios.map((h) => (
-                <MenuItem key={h.horarioId} value={h.horarioId}>
-                  {h.fecha} {h.horaInicio} - {h.horaFin} (Tutor:{" "}
-                  {h.tutor?.nombre})
+              {horariosDisponibles.length === 0 ? (
+                <MenuItem disabled>
+                  {loading
+                    ? "Cargando horarios..."
+                    : "No hay horarios disponibles"}
                 </MenuItem>
-              ))}
+              ) : (
+                horariosDisponibles.map((h) => (
+                  <MenuItem key={h.horarioId} value={h.horarioId}>
+                    {new Date(h.fecha).toLocaleDateString()}{" "}
+                    {h.horaInicio.substring(0, 5)} - {h.horaFin.substring(0, 5)}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
-
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
         </Box>
       </DialogContent>
+
       <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button
           onClick={onClose}
@@ -143,6 +184,7 @@ const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
             color: "text.secondary",
             "&:hover": { backgroundColor: "action.hover" },
           }}
+          disabled={loading}
         >
           Cancelar
         </Button>
@@ -150,11 +192,18 @@ const RequestTutorialModal = ({ open, onClose, onSubmit }) => {
           variant="contained"
           onClick={handleSubmit}
           disabled={
-            !localForm.subject || !localForm.reason || !localForm.horarioId
+            loading ||
+            !localForm.subject ||
+            !localForm.reason ||
+            !localForm.horarioId
           }
           sx={{ px: 3, "&:hover": { backgroundColor: "primary.dark" } }}
         >
-          Enviar Solicitud
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Enviar Solicitud"
+          )}
         </Button>
       </DialogActions>
     </Dialog>

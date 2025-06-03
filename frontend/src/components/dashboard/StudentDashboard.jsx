@@ -11,9 +11,8 @@ import {
   Paper,
   Button,
 } from "@mui/material";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { Add as AddIcon } from "@mui/icons-material";
 import RequestTutorialModal from "./modals/RequestTutorialModal";
+import { Add as AddIcon } from "@mui/icons-material";
 import { solicitudService } from "../../services/api";
 
 const StudentDashboard = () => {
@@ -27,9 +26,18 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const solicitudes = await solicitudService.getSolicitudes();
+        const usuario = JSON.parse(localStorage.getItem("usuario"));
+        const id = usuario?.usuarioId;
+
+        if (!id)
+          throw new Error("ID de estudiante no encontrado en localStorage");
+
+        const solicitudes = await solicitudService.getSolicitudesPorEstudiante(
+          id
+        );
         setRequests(solicitudes);
       } catch (err) {
+        console.error("Error al cargar solicitudes:", err);
         setError("Error al cargar solicitudes");
       } finally {
         setLoading(false);
@@ -134,23 +142,16 @@ const StudentDashboard = () => {
     );
   };
 
-  const getTutoringDates = () => {
-    const dates = new Set();
-    requests.forEach((item) => {
-      if (item?.fechaSolicitud) {
-        dates.add(new Date(item.fechaSolicitud).toISOString().split("T")[0]);
-      }
-    });
-    return Array.from(dates);
-  };
-
   const handleSubmitSolicitud = async (formData) => {
     setSubmitting(true);
     setSubmitError(null);
     try {
       await solicitudService.createSolicitud(formData);
       setIsModalOpen(false);
-      const updated = await solicitudService.getSolicitudes();
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      const updated = await solicitudService.getSolicitudesPorEstudiante(
+        usuario.usuarioId
+      );
       setRequests(updated);
     } catch (err) {
       setSubmitError("Error al enviar la solicitud.");

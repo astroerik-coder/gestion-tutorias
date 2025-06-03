@@ -1,4 +1,5 @@
 // src/App.js
+import { ToastContainer } from "react-toastify";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme";
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
       </Routes>
+      <ToastContainer />
     </ThemeProvider>
   );
 }

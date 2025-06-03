@@ -69,26 +69,6 @@ export const horarioService = {
       throw error;
     }
   },
-
-  getHorarioById: async (horarioId) => {
-    try {
-      const response = await api.get(`/horarios/${horarioId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error al obtener el horario por ID:", error);
-      throw error;
-    }
-  },
-
-  createHorario: async (horarioData) => {
-    try {
-      const response = await api.post("/horarios", horarioData);
-      return response.data;
-    } catch (error) {
-      console.error("Error al crear horario:", error);
-      throw error;
-    }
-  },
 };
 
 // Servicio de solicitudes
@@ -103,46 +83,42 @@ export const solicitudService = {
     }
   },
 
-  createSolicitud: async (formData) => {
+  /* Obtener solicitudes propias */
+  getSolicitudesPorEstudiante: async (estudianteId) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado");
-  
-      const payload = JSON.parse(atob(token.split(".")[1]));
-  
-      const estudiante = {
-        estudianteId: payload.id,
-        carrera: payload.carrera || "",
-        usuario: {
-          usuarioId: payload.id,
-          nombre: payload.nombre,
-          correo: payload.sub,
-          contrasena: "",
-          rol: "estudiante",
-        },
-      };
-  
-      const horario = await horarioService.getHorarioById(formData.horarioId);
-  
-      const solicitud = {
-        solicitudId: 0,
-        materia: formData.subject,
-        motivo: formData.reason,
-        estado: "Pendiente",
-        fechaSolicitud: new Date().toISOString(),
-        estudiante,
-        horario,
-      };
-  
-      const response = await api.post("/solicitudes", solicitud);
+      const response = await api.get(`/solicitudes/estudiante/${estudianteId}`);
       return response.data;
-  
     } catch (error) {
-      console.error("Error en createSolicitud:", error);
+      console.error("Error al obtener solicitudes del estudiante:", error);
       throw error;
     }
   },
-  
+
+  /* Funcional */
+  createSolicitud: async (formData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      if (!token || !usuario) throw new Error("Token o usuario no encontrado");
+
+      const solicitud = {
+        materia: formData.subject,
+        motivo: formData.reason,
+        estado: "Pendiente",
+        estudiante: {
+          estudianteId: usuario.usuarioId,
+        },
+        horario: {
+          horarioId: formData.horarioId,
+        },
+      };
+      const response = await api.post("/solicitudes", solicitud);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   updateSolicitudEstado: async (solicitud) => {
     try {
       const response = await api.put(
