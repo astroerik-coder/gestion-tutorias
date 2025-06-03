@@ -48,46 +48,34 @@ const AppBar = ({ onMenuClick, role, onRoleChange, user }) => {
           Sistema de Tutorías
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <FormControl
-            size="small"
-            sx={{
-              minWidth: 120,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.08)",
-                },
-              },
-            }}
-          >
-            <Select
-              value={role}
-              onChange={(e) => onRoleChange(e.target.value)}
-              sx={{
-                color: "text.primary",
-                ".MuiSelect-icon": { color: "text.primary" },
-              }}
-              IconComponent={SwapHorizIcon}
-            >
-              <MenuItem value="estudiante">Estudiante</MenuItem>
-              <MenuItem value="tutor">Tutor</MenuItem>
-              <MenuItem value="coordinador">Coordinador</MenuItem>
-            </Select>
-          </FormControl>
-          <Avatar
-            sx={{
-              bgcolor: "primary.main",
-              width: 32,
-              height: 32,
-              fontSize: "0.875rem",
-            }}
-          >
-            {user?.name
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("") || "U"}
-          </Avatar>
-        </Box>
+  <Box
+    sx={{
+      px: 2,
+      py: 0.5,
+      borderRadius: 1,
+      bgcolor: "rgba(0, 0, 0, 0.04)",
+      display: "flex",
+      alignItems: "center",
+      height: 36,
+    }}
+  >
+    <Typography sx={{ fontWeight: 500, fontSize: "0.875rem", color: "text.primary" }}>
+      Rol: {role.charAt(0).toUpperCase() + role.slice(1)}
+    </Typography>
+  </Box>
+  <Avatar
+    sx={{
+      bgcolor: "primary.main",
+      width: 32,
+      height: 32,
+      fontSize: "0.875rem",
+    }}
+  >
+    {user?.name?.split(" ").map((n) => n[0]).join("") || "U"}
+  </Avatar>
+</Box>
+
+
       </Toolbar>
     </MuiAppBar>
   );
