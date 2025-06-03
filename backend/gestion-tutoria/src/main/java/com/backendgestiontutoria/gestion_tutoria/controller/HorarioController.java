@@ -91,10 +91,4 @@ public ResponseEntity<HorarioDTO> crearHorario(@RequestBody Horario horario) {
         return ResponseEntity.ok(HorarioDTO.fromEntity(horarioService.guardarHorario(horario)));
     }
 
-    // ✅ Eliminar horario
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarHorario(@PathVariable Integer id) {
-        horarioService.eliminarPorId(id);
-        return ResponseEntity.noContent().build();
-    }
 }

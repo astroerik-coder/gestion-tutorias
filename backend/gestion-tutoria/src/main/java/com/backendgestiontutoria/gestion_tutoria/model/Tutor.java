@@ -9,17 +9,15 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tutor {
+
     @Id
     @Column(name = "tutor_id")
     private Integer tutorId;
 
     private String departamento;
 
-@OneToOne
-@JoinColumn(name = "tutor_id", referencedColumnName = "usuario_id", insertable = false, updatable = false)
-@com.fasterxml.jackson.annotation.JsonIgnore
-private Usuario usuario;
-
-
-
+    @OneToOne
+    @JoinColumn(name = "tutor_id", referencedColumnName = "usuario_id", insertable = false, updatable = false)
+    private Usuario usuario;
 }
+
