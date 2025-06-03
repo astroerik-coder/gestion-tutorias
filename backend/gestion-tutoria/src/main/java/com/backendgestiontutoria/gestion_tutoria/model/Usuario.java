@@ -28,6 +28,9 @@ public class Usuario {
     @Column(nullable = false)
     private Rol rol;
 
+    @Column(name = "carrera")
+    private String carrera; 
+
     public enum Rol {
         estudiante,
         tutor,

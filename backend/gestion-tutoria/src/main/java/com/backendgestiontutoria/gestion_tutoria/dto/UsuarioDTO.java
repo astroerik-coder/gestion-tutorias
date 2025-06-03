@@ -13,25 +13,24 @@ public class UsuarioDTO {
     private String nombre;
     private String correo;
     private Usuario.Rol rol;
-
-    // Conversión desde entidad Usuario → UsuarioDTO
+    private String carrera; 
     public static UsuarioDTO fromEntity(Usuario usuario) {
         return new UsuarioDTO(
             usuario.getUsuarioId(),
             usuario.getNombre(),
             usuario.getCorreo(),
-            usuario.getRol()
+            usuario.getRol(),
+            usuario.getCarrera() 
         );
     }
 
-    // Conversión desde DTO → entidad Usuario (por si lo necesitas)
     public Usuario toEntity() {
         Usuario usuario = new Usuario();
         usuario.setUsuarioId(this.usuarioId);
         usuario.setNombre(this.nombre);
         usuario.setCorreo(this.correo);
         usuario.setRol(this.rol);
-        // Nota: no seteamos contraseña aquí por seguridad
+        usuario.setCarrera(this.carrera); 
         return usuario;
     }
 }
