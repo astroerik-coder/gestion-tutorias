@@ -1,4 +1,5 @@
 import axios from "axios";
+import API_ENDPOINTS from "../config/api";
 
 const API_URL = "http://localhost:8080/api";
 
@@ -98,9 +99,24 @@ export const solicitudService = {
   createSolicitud: async (formData) => {
     try {
       const token = localStorage.getItem("token");
-      const usuario = JSON.parse(localStorage.getItem("usuario"));
-      if (!token || !usuario) throw new Error("Token o usuario no encontrado");
-
+      if (!token) throw new Error("Token no encontrado");
+  
+      const payload = JSON.parse(atob(token.split(".")[1]));
+  
+      const estudiante = {
+        estudianteId: payload.id,
+        carrera: payload.carrera || "",
+        usuario: {
+          usuarioId: payload.id,
+          nombre: payload.nombre,
+          correo: payload.sub,
+          contrasena: "",
+          rol: "estudiante",
+        },
+      };
+  
+      const horario = await horarioService.getHorarioById(formData.horarioId);
+  
       const solicitud = {
         materia: formData.subject,
         motivo: formData.reason,
@@ -112,8 +128,10 @@ export const solicitudService = {
           horarioId: formData.horarioId,
         },
       };
+  
       const response = await api.post("/solicitudes", solicitud);
       return response.data;
+  
     } catch (error) {
       throw error;
     }
@@ -145,10 +163,39 @@ export const estadisticaService = {
   },
 };
 
+export const auditService = {
+  getLogsByTable: async (tabla) => {
+    try {
+      const response = await api.get(API_ENDPOINTS.audit.byTable(tabla));
+      return response.data;
+    } catch (error) {
+      console.error("Error al obtener logs por tabla:", error);
+      throw error;
+    }
+  },
+
+  getLogsByUser: async (userId) => {
+    try {
+      const response = await api.get(API_ENDPOINTS.audit.byUser(userId));
+      return response.data;
+    } catch (error) {
+      console.error("Error al obtener logs por usuario:", error);
+      throw error;
+    }
+  },
+
+  getLogsByUser: async (userId) => {
+  const response = await api.get(API_ENDPOINTS.audit.byUser(userId));
+  return response.data;
+}
+
+};
+
 export default {
   authService,
   horarioService,
   solicitudService,
   feedbackService,
   estadisticaService,
+  auditService,
 };

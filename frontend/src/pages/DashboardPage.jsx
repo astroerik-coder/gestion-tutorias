@@ -15,7 +15,7 @@ import FeedbackModal from "../components/dashboard/modals/FeedbackModal";
 import AddUserModal from "../components/dashboard/modals/AddUserModal";
 import UsersSection from "../components/dashboard/sections/UsersSection";
 import StatisticsSection from "../components/dashboard/sections/StatisticsSection";
-import AuditSection from "../components/dashboard/sections/AuditSection";
+import AuditPage from "../pages/AuditPage";
 import ManageRequestsSection from "../components/dashboard/sections/ManageRequestsSection";
 
 export default function DashboardPage() {
@@ -137,8 +137,7 @@ export default function DashboardPage() {
         );
 
       case "audit":
-        return <AuditSection activities={recentActivity} />;
-
+        return <AuditPage />;
       default:
         return (
           <Box sx={{ p: 3, textAlign: "center" }}>

@@ -35,6 +35,13 @@ export const API_ENDPOINTS = {
     tutors: '/estadisticas/tutores',
     subjects: '/estadisticas/materias',
   },
+
+   // Auditoría
+  audit: {
+    byTable: (tabla) => `/logs/tabla?tabla=${tabla}`,
+    byUser: (userId) => `/logs/usuario/${userId}`,
+  },
 };
+
 
 export default API_ENDPOINTS; 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { horarioService, solicitudService } from "../services/api";
+import { horarioService, solicitudService, auditService  } from "../services/api";
 
 export const useDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -8,6 +8,7 @@ export const useDashboard = () => {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [userTab, setUserTab] = useState(0);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   // Estado para formularios
   const [requestForm, setRequestForm] = useState({
@@ -29,30 +30,40 @@ export const useDashboard = () => {
   const [error, setError] = useState(null);
 
   // Cargar datos iniciales
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Cargar solicitudes
-        const requestsData = await solicitudService.getSolicitudes();
-        setRequests(requestsData);
+      // Llamadas simultáneas a solicitudes, horarios y logs
+      const [requestsData, horariosData, logsData] = await Promise.all([
+        solicitudService.getSolicitudes(),
+        horarioService.getHorarios(),
+        auditService.getLogsByTable("solicitud"),
+      ]);
 
-        // Cargar horarios
-        const horariosData = await horarioService.getHorarios();
-        setHorarios(horariosData);
-      } catch (err) {
-        setError("Error al cargar los datos");
-        console.error("Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setRequests(requestsData);
+      setHorarios(horariosData);
 
-    fetchData();
-  }, []);
+      const parsedLogs = logsData.map((log) => ({
+        id: log.logId,
+        subject: `${log.usuario.nombre} - ${log.accion}`,
+        status: log.descripcion,
+        date: log.fecha,
+      }));
 
+      setRecentActivity(parsedLogs);
+    } catch (err) {
+      setError("Error al cargar los datos");
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
   // Handlers
   const handleRequestSubmit = async () => {
     try {
@@ -123,6 +134,7 @@ export const useDashboard = () => {
     setScheduleForm,
 
     // Datos
+    recentActivity,
     requests,
     horarios,
     loading,

@@ -1,3 +1,4 @@
+// src/components/dashboard/sections/AuditSection.jsx
 import React from 'react';
 import {
   Card,
@@ -20,7 +21,7 @@ const AuditSection = ({ activities }) => {
         <List>
           {activities.map((item) => (
             <ListItem
-              key={item.id}
+              key={item.logId}
               sx={{
                 mb: 1,
                 borderRadius: 1,
@@ -31,31 +32,41 @@ const AuditSection = ({ activities }) => {
             >
               <ListItemAvatar>
                 <Avatar sx={{ bgcolor: 'primary.main' }}>
-                  {item.subject ? item.subject.charAt(0) : 'A'}
+                  {item.usuario?.nombre?.charAt(0) || 'U'}
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={item.subject || 'Nueva solicitud'}
+                primary={item.usuario?.nombre || 'Usuario desconocido'}
                 secondary={
                   <>
-                    <Typography component="span" variant="body2" color="text.primary">
-                      {new Date(item.date).toLocaleDateString()}
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.primary"
+                    >
+                      {new Date(item.fecha).toLocaleString()}
                     </Typography>
                     <br />
-                    <Typography component="span" variant="body2" color="text.secondary">
-                      {item.status || 'Pendiente de revisión'}
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      {item.descripcion}
                     </Typography>
                   </>
                 }
               />
               <Chip
-                label={item.status || 'Pendiente'}
+                label={item.accion}
                 color={
-                  item.status === 'aprobada'
+                  item.accion === 'INSERT'
                     ? 'success'
-                    : item.status === 'rechazada'
+                    : item.accion === 'UPDATE'
+                    ? 'info'
+                    : item.accion === 'DELETE'
                     ? 'error'
-                    : 'warning'
+                    : 'default'
                 }
                 size="small"
               />
@@ -64,7 +75,9 @@ const AuditSection = ({ activities }) => {
         </List>
       </CardContent>
     </Card>
+    
   );
+  
 };
 
-export default AuditSection; 
+export default AuditSection;
